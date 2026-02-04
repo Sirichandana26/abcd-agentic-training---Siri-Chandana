@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Report Public Issue</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f2f2f2;
+    }
+
+    .container {
+      width: 400px;
+      margin: 80px auto;
+      background: #ffffff;
+      padding: 20px;
+      border-radius: 6px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      text-align: center;
+    }
+
+    input, textarea, button {
+      width: 100%;
+      margin-top: 10px;
+      padding: 8px;
+      font-size: 14px;
+    }
+
+    textarea {
+      resize: none;
+      height: 80px;
+    }
+
+    button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    .logout {
+      background-color: red;
+      margin-top: 15px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+    <h2>Report Public Issue</h2>
+
+    <input type="text" id="category" placeholder="Issue Category (Road, Water, Light)" required>
+    <textarea id="description" placeholder="Describe the issue" required></textarea>
+    <input type="text" id="location" placeholder="Location" required>
+
+    <button onclick="submitComplaint()">Submit Complaint</button>
+    <button class="logout" onclick="logout()">Logout</button>
+  </div>
+
+  <script>
+    // 🔐 Check login
+    const userId = localStorage.getItem("user_id");
+    const role = localStorage.getItem("role");
+
+    if (!userId || role !== "citizen") {
+      alert("Please login as a user first");
+      window.location.href = "login.html";
+    }
+
+    // 📤 Submit complaint
+    function submitComplaint() {
+      const category = document.getElementById("category").value;
+      const description = document.getElementById("description").value;
+      const location = document.getElementById("location").value;
+
+      if (!category || !description || !location) {
+        alert("Please fill all fields");
+        return;
+      }
+
+      fetch("http://localhost:3000/complaint", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          user_id: userId,
+          category: category,
+          description: description,
+          location: location
+        })
+      })
+      .then(res => res.text())
+      .then(msg => {
+        alert(msg);
+        document.getElementById("category").value = "";
+        document.getElementById("description").value = "";
+        document.getElementById("location").value = "";
+      })
+      .catch(err => {
+        alert("Error submitting complaint");
+        console.error(err);
+      });
+    }
+
+    // 🚪 Logout
+    function logout() {
+      localStorage.clear();
+      window.location.href = "login.html";
+    }
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Authority Dashboard</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+    }
+
+    h2 {
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    table {
+      width: 95%;
+      margin: 30px auto;
+      border-collapse: collapse;
+      background: white;
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 10px;
+      text-align: center;
+    }
+
+    th {
+      background-color: #333;
+      color: white;
+    }
+
+    button {
+      padding: 6px 12px;
+      cursor: pointer;
+    }
+
+    .resolve {
+      background-color: green;
+      color: white;
+      border: none;
+    }
+
+    .logout {
+      display: block;
+      margin: 10px auto;
+      background-color: red;
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h2>Authority Dashboard</h2>
+
+  <button class="logout" onclick="logout()">Logout</button>
+
+  <table id="complaintsTable">
+    <tr>
+      <th>ID</th>
+      <th>Category</th>
+      <th>Description</th>
+      <th>Location</th>
+      <th>Status</th>
+      <th>Action</th>
+    </tr>
+  </table>
+
+  <script>
+    // 🔐 AUTHORITY ACCESS CHECK
+    const role = localStorage.getItem("role");
+
+    if (role !== "authority") {
+      alert("Unauthorized access. Please login as authority.");
+      window.location.href = "login.html";
+    }
+
+    // 📥 LOAD COMPLAINTS
+    function loadComplaints() {
+      fetch("http://localhost:3000/complaints")
+        .then(res => res.json())
+        .then(data => {
+          const table = document.getElementById("complaintsTable");
+
+          // Clear table (keep header)
+          table.innerHTML = `
+            <tr>
+              <th>ID</th>
+              <th>Category</th>
+              <th>Description</th>
+              <th>Location</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          `;
+
+          data.forEach(c => {
+            const row = table.insertRow();
+            row.insertCell(0).innerText = c.complaint_id;
+            row.insertCell(1).innerText = c.category;
+            row.insertCell(2).innerText = c.description;
+            row.insertCell(3).innerText = c.location;
+            row.insertCell(4).innerText = c.status;
+
+            const actionCell = row.insertCell(5);
+            const btn = document.createElement("button");
+            btn.innerText = "Resolve";
+            btn.className = "resolve";
+            btn.onclick = () => resolveComplaint(c.complaint_id);
+            actionCell.appendChild(btn);
+          });
+        })
+        .catch(err => {
+          alert("Error loading complaints");
+          console.error(err);
+        });
+    }
+
+    // 🔄 RESOLVE COMPLAINT
+    function resolveComplaint(id) {
+      fetch(`http://localhost:3000/complaint/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ status: "Resolved" })
+      })
+      .then(res => res.text())
+      .then(msg => {
+        alert(msg);
+        loadComplaints(); // refresh table
+      })
+      .catch(err => {
+        alert("Error updating status");
+        console.error(err);
+      });
+    }
+
+    // 🚪 LOGOUT
+    function logout() {
+      localStorage.clear();
+      window.location.href = "login.html";
+    }
+
+    // 🚀 INITIAL LOAD
+    loadComplaints();
+  </script>
+
+</body>
+</html>
