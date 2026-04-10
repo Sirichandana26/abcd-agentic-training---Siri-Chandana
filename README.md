@@ -2,7 +2,7 @@
 # Smart Public Maintenance Reporting System
 
 This is a full stack web application designed to help citizens report public maintenance issues such as road damage, garbage, water leakage, and streetlight problems.
-project link--Full stack
+Full stack website---https://github.com/Sirichandana26/Full-stack-
 
 ## Machine Learning Module
 The system uses a Sentiment Analysis model to analyze public comments and feedback.  
